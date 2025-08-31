@@ -18,7 +18,7 @@ An AI-powered fact-checking system with Chrome extension that analyzes text sele
 ### Step 1: Deploy Backend
 ```bash
 git clone https://github.com/wanchaiS/Truely-Govhack.git
-cd Truely/backend
+cd Truely-Govhack/backend
 
 # Configure OpenAI API key (required)
 
