@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Truely - AI Fact Checker",
+  "version": "2.0",
+  "description": "Truely - AI-powered fact-checking extension for text selection and verification",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*",
+    "http://localhost:8877/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Truely - AI Fact Checker"
+  }
+}

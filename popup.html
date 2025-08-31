@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 350px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      background: #f8f9fa;
+    }
+    
+    h1 {
+      font-size: 18px;
+      margin: 0 0 20px 0;
+      color: #333;
+      text-align: center;
+    }
+    
+    .setting-section {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .setting-label {
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    
+    .toggle-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #0ea5e9;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+    .status-message {
+      font-size: 12px;
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .status-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <h1>✅ Truely</h1>
+  
+  
+  <div class="setting-section">
+    <div class="toggle-section">
+      <div class="setting-label">Enable Fact Check</div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="extensionToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  
+  <div class="setting-section">
+    <div class="setting-label">Document Management</div>
+    <a href="http://localhost/landing" target="_blank" style="background: #0ea5e9; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; width: 100%; display: block; text-align: center;">
+      📄 Manage Documents
+    </a>
+  </div>
+  
+  <script>
+    console.log('Popup script loading...');
+    
+    // Add error handler
+    window.addEventListener('error', function(e) {
+      console.error('Script error:', e.error);
+      alert('Script error: ' + e.message);
+    });
+    
+    // Add visual indicator that script is loading
+    document.title = 'Truely - Loading...';
+    
+    // Load saved settings when popup opens
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM content loaded');
+      document.title = 'Truely - Ready';
+      
+      try {
+        loadSettings();
+        setupEventListeners();
+      } catch (error) {
+        console.error('Error during initialization:', error);
+        alert('Initialization error: ' + error.message);
+      }
+    });
+    
+    function loadSettings() {
+      console.log('Loading settings from storage...');
+      
+      // Try sync storage first, fallback to local storage
+      const storage = chrome.storage.sync || chrome.storage.local;
+      
+      storage.get(['extensionEnabled'], function(data) {
+        if (chrome.runtime.lastError) {
+          console.error('Error loading settings:', chrome.runtime.lastError);
+          showStatus('Error loading settings', true);
+          return;
+        }
+        
+        console.log('Settings loaded:', data);
+        document.getElementById('extensionToggle').checked = data.extensionEnabled !== false;
+      });
+    }
+    
+    function showStatus(message, isError = false) {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = message;
+      statusEl.className = `status-message ${isError ? 'status-error' : 'status-success'}`;
+      statusEl.style.display = 'block';
+      
+      setTimeout(() => {
+        statusEl.style.display = 'none';
+      }, 3000);
+    }
+    
+    function setupEventListeners() {
+      console.log('Setting up event listeners...');
+      
+      // Extension toggle
+      document.getElementById('extensionToggle').addEventListener('change', function(e) {
+        const isEnabled = e.target.checked;
+        console.log('Extension toggle changed to:', isEnabled);
+        
+        // Try sync storage first, fallback to local storage
+        const storage = chrome.storage.sync || chrome.storage.local;
+        
+        storage.set({ extensionEnabled: isEnabled }, function() {
+          if (chrome.runtime.lastError) {
+            console.error('Error saving extension state:', chrome.runtime.lastError);
+            return;
+          }
+          
+          console.log('Extension state saved successfully');
+          // Send message to content script to enable/disable
+          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            if (tabs[0]) {
+              chrome.tabs.sendMessage(tabs[0].id, {
+                action: 'toggleExtension',
+                enabled: isEnabled
+              });
+            }
+          });
+        });
+      });
+      
+      // Landing page link now uses simple href - no JavaScript needed
+      
+      console.log('Event listeners setup complete');
+    }
+  </script>
+</body>
+</html>

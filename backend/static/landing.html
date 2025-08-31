@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Truely - Document Management</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 40px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            color: #333; 
+            margin-bottom: 30px; 
+        }
+        .upload-area { 
+            border: 2px dashed #ddd; 
+            padding: 30px; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            border-radius: 8px; 
+        }
+        .upload-area:hover { 
+            border-color: #0ea5e9; 
+        }
+        .file-list { 
+            margin-top: 30px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { 
+            background: #f8f9fa; 
+            font-weight: 500; 
+        }
+        .status { 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+        }
+        .status.processed { 
+            background: #d1fae5; 
+            color: #065f46; 
+        }
+        .status.unprocessed { 
+            background: #fef3c7; 
+            color: #92400e; 
+        }
+        .btn { 
+            background: #0ea5e9; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        .btn:hover { 
+            background: #0284c7; 
+        }
+        .btn:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        #fileInput { 
+            display: none; 
+        }
+        .message { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { 
+            background: #d1fae5; 
+            color: #065f46; 
+        }
+        .error { 
+            background: #fee2e2; 
+            color: #991b1b; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Truely - Document Management</h1>
+        
+        <div class="upload-section">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <p>Click here to select files to upload</p>
+                <p style="color: #666; font-size: 14px;">Supported formats: PDF, DOCX, TXT, CSV (Max 16MB per file)</p>
+                <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.csv">
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label for="sourceUrl" style="display: block; font-weight: 500; margin-bottom: 5px;">Source URL (required):</label>
+                <input type="url" id="sourceUrl" placeholder="https://example.com/document-source" 
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;" required>
+                <p style="color: #666; font-size: 12px; margin: 5px 0 0 0;">Please provide the original source URL for this document</p>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button id="uploadBtn" class="btn" style="width: 100%; padding: 12px;" disabled>Upload File</button>
+            </div>
+        </div>
+        
+        <div id="message"></div>
+        
+        <div class="file-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>Files in System</h2>
+                <button id="clearDbBtn" class="btn" style="background: #dc2626; padding: 8px 16px;">Clear Database</button>
+            </div>
+            <table id="fileTable">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Last Modified</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="fileTableBody">
+                    <tr><td colspan="5">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // API base URL - adjust for your environment
+        const API_BASE_URL = 'http://localhost';
+
+        function showMessage(text, isError = false) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${isError ? 'error' : 'success'}">${text}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 5000);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function loadFiles() {
+            fetch(`${API_BASE_URL}/files`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('fileTableBody');
+                    if (data.files && data.files.length > 0) {
+                        tbody.innerHTML = data.files.map(file => `
+                            <tr>
+                                <td>${file.name}</td>
+                                <td>${formatFileSize(file.size)}</td>
+                                <td><span class="status ${file.processed ? 'processed' : 'unprocessed'}">
+                                    ${file.processed ? 'Processed' : 'Unprocessed'}
+                                </span></td>
+                                <td>${new Date(file.last_modified).toLocaleString()}</td>
+                                <td>
+                                    <button class="btn" style="background: #dc2626;" onclick="deleteFile('${file.name}')">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="5">No files found</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading files:', error);
+                    showMessage('Error loading files', true);
+                });
+        }
+
+
+        function deleteFile(filename) {
+            if (!confirm(`Are you sure you want to delete "${filename}"? This will permanently remove the file and all its data from the database.`)) {
+                return;
+            }
+
+            fetch(`${API_BASE_URL}/files/${encodeURIComponent(filename)}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage(`File deleted: ${data.filename}`);
+                    loadFiles();
+                } else {
+                    showMessage(data.error || 'Delete failed', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting file:', error);
+                showMessage('Error deleting file', true);
+            });
+        }
+
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const sourceUrl = document.getElementById('sourceUrl');
+            
+            if (event.target.files.length > 0 && sourceUrl.value.trim()) {
+                uploadBtn.disabled = false;
+            } else {
+                uploadBtn.disabled = true;
+            }
+        });
+
+        document.getElementById('sourceUrl').addEventListener('input', function(event) {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (fileInput.files.length > 0 && event.target.value.trim()) {
+                uploadBtn.disabled = false;
+            } else {
+                uploadBtn.disabled = true;
+            }
+        });
+
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('fileInput');
+            const sourceUrl = document.getElementById('sourceUrl').value.trim();
+            
+            if (fileInput.files.length === 0) {
+                showMessage('Please select a file', true);
+                return;
+            }
+            
+            if (!sourceUrl) {
+                showMessage('Please provide a source URL', true);
+                return;
+            }
+            
+            uploadFile(fileInput.files[0], sourceUrl);
+        });
+
+        function uploadFile(file, sourceUrl) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('source_url', sourceUrl);
+
+            // Disable upload button during upload
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading & Processing...';
+
+            fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage(`File uploaded and processed: ${data.filename} (${data.chunks_created} chunks created)`);
+                    
+                    // Clear form
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('sourceUrl').value = '';
+                    uploadBtn.disabled = true;
+                    
+                    loadFiles();
+                } else if (data.status === 'partial_success') {
+                    showMessage(`File uploaded but processing failed: ${data.message}`, true);
+                    loadFiles();
+                } else {
+                    showMessage(data.error || 'Upload failed', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                showMessage('Error uploading file', true);
+            })
+            .finally(() => {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            });
+        }
+
+        function clearDatabase() {
+            if (!confirm('Are you sure you want to clear the entire database? This will permanently remove all processed documents and cannot be undone.')) {
+                return;
+            }
+
+            const clearBtn = document.getElementById('clearDbBtn');
+            clearBtn.disabled = true;
+            clearBtn.textContent = 'Clearing...';
+
+            fetch(`${API_BASE_URL}/clear-database`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage('Database cleared successfully');
+                    loadFiles(); // Refresh the file list
+                } else {
+                    showMessage(data.error || 'Clear failed', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing database:', error);
+                showMessage('Error clearing database', true);
+            })
+            .finally(() => {
+                clearBtn.disabled = false;
+                clearBtn.textContent = 'Clear Database';
+            });
+        }
+
+        // Add event listener for clear database button
+        document.getElementById('clearDbBtn').addEventListener('click', clearDatabase);
+
+        // Load files on page load
+        loadFiles();
+    </script>
+</body>
+</html>

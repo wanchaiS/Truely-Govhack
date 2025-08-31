@@ -1,0 +1,55 @@
+# Virtual environment
+backend/venv/
+backend/__pycache__/
+backend/src/__pycache__/
+
+# Environment files (keep .env.example)
+backend/.env
+
+# Database files
+backend/data/chroma_db/
+
+# Log files
+backend/logs/*.log
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Temporary files
+*.tmp
+*.temp

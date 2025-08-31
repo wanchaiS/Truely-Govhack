@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  fact-check-api:
+    build: .
+    ports:
+      - "${PORT:-8877}:8877"
+    env_file:
+      - .env
+    environment:
+      - PORT=8877
+    volumes:
+      # Mount data directory to persist database
+      - ./data:/app/data
+      # Mount documents directory for processing new documents
+      - ./documents:/app/documents
+      # Mount logs directory
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8877/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    
+  # Optional: Add a simple web interface for testing
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/usr/share/nginx/html:ro
+    depends_on:
+      - fact-check-api
+    profiles:
+      - with-nginx
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
