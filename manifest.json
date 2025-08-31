@@ -13,6 +13,10 @@
     "https://*/*",
     "http://localhost:8877/*"
   ],
+  "icons": {
+    "16": "logo/logo-sm.png",
+    "32": "logo/logo-sm.png"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
