@@ -126,11 +126,9 @@
   </div>
   
   <script>
-    console.log('Popup script loading...');
     
     // Add error handler
     window.addEventListener('error', function(e) {
-      console.error('Script error:', e.error);
       alert('Script error: ' + e.message);
     });
     
@@ -139,32 +137,27 @@
     
     // Load saved settings when popup opens
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM content loaded');
       document.title = 'Truely - Ready';
       
       try {
         loadSettings();
         setupEventListeners();
       } catch (error) {
-        console.error('Error during initialization:', error);
         alert('Initialization error: ' + error.message);
       }
     });
     
     function loadSettings() {
-      console.log('Loading settings from storage...');
       
       // Try sync storage first, fallback to local storage
       const storage = chrome.storage.sync || chrome.storage.local;
       
       storage.get(['extensionEnabled'], function(data) {
         if (chrome.runtime.lastError) {
-          console.error('Error loading settings:', chrome.runtime.lastError);
           showStatus('Error loading settings', true);
           return;
         }
         
-        console.log('Settings loaded:', data);
         document.getElementById('extensionToggle').checked = data.extensionEnabled !== false;
       });
     }
@@ -181,23 +174,19 @@
     }
     
     function setupEventListeners() {
-      console.log('Setting up event listeners...');
       
       // Extension toggle
       document.getElementById('extensionToggle').addEventListener('change', function(e) {
         const isEnabled = e.target.checked;
-        console.log('Extension toggle changed to:', isEnabled);
         
         // Try sync storage first, fallback to local storage
         const storage = chrome.storage.sync || chrome.storage.local;
         
         storage.set({ extensionEnabled: isEnabled }, function() {
           if (chrome.runtime.lastError) {
-            console.error('Error saving extension state:', chrome.runtime.lastError);
             return;
           }
           
-          console.log('Extension state saved successfully');
           // Send message to content script to enable/disable
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             if (tabs[0]) {
@@ -212,7 +201,6 @@
       
       // Landing page link now uses simple href - no JavaScript needed
       
-      console.log('Event listeners setup complete');
     }
   </script>
 </body>

@@ -156,7 +156,6 @@ function showAnalysisResult(content, sourcesData = null) {
 // Fact check mode analysis - now using real API
 async function fetchFactCheckAnalysis(content) {
   try {
-    console.log('Making API call to backend');
 
     const response = await fetch('http://localhost/api/fact-check', {
       method: 'POST',
@@ -211,7 +210,6 @@ async function fetchFactCheckAnalysis(content) {
     };
     
   } catch (error) {
-    console.error('Fact-check API error:', error);
     
     // Fallback to basic analysis if API fails
     return {
@@ -344,24 +342,19 @@ function hideButtonContainer() {
 
 // Handle text selection
 function handleTextSelection() {
-  console.log('Text selection event triggered, extensionEnabled:', extensionEnabled);
   
   // Check if extension is enabled
   if (!extensionEnabled) {
-    console.log('Extension is disabled, returning');
     return;
   }
   
   setTimeout(() => {
     const selectedText = getSelectedText();
-    console.log('Selected text:', selectedText);
     
     if (selectedText && isValidSelection(selectedText)) {
-      console.log('Valid selection, showing button container');
       currentSelectedText = selectedText;
       showButtonContainer(null, true);
     } else {
-      console.log('Invalid or no selection, hiding button container');
       currentSelectedText = null;
       hideButtonContainer();
     }
@@ -403,14 +396,12 @@ function init() {
       document.addEventListener('mouseup', handleTextSelection);
       document.addEventListener('keyup', handleTextSelection);
       
-      console.log('Truely AI Fact Checker extension loaded - enabled:', extensionEnabled);
     });
   } else {
     // Fallback: if storage API is not available, just enable the extension
     extensionEnabled = true;
     document.addEventListener('mouseup', handleTextSelection);
     document.addEventListener('keyup', handleTextSelection);
-    console.log('Truely AI Fact Checker extension loaded - storage not available, defaulting to enabled');
   }
   
   // Hide analysis box and buttons when clicking outside
