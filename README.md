@@ -19,6 +19,11 @@ An AI-powered fact-checking system with Chrome extension that analyzes text sele
 ```bash
 git clone <this-repo>
 cd Truely/backend
+
+# Configure OpenAI API key (required)
+cp .env.example .env
+# Edit .env and add: OPENAI_API_KEY=your_key_here
+
 docker compose up -d
 ```
 
@@ -64,56 +69,3 @@ docker compose up -d
 1. Upload documents through web interface → Text extraction → Vector embeddings → Database storage
 2. Select text on webpage → Extension queries database → AI analyzes context → Results displayed
 
-## 🔧 Optional Configuration
-
-**Add OpenAI API Key for enhanced AI features:**
-```bash
-cd backend
-cp .env.example .env
-# Edit .env and add: OPENAI_API_KEY=your_key_here
-docker compose restart
-```
-
-**Change port if 8877 is occupied:**
-```bash
-PORT=9000 docker compose up -d
-```
-
-## 🛠️ Management Commands
-
-```bash
-# View logs
-docker compose logs -f
-
-# Stop system  
-docker compose down
-
-# Restart
-docker compose restart
-```
-
-## 🆘 Troubleshooting
-
-**Extension not working?**
-- Ensure backend is running on port 8877
-- Check Chrome developer tools console for errors
-- Reload the extension in chrome://extensions/
-
-**Port already in use?**
-```bash
-PORT=9000 docker compose up -d
-# Update content.js fetch URL to match new port
-```
-
-**Container won't start?**
-```bash
-docker compose logs fact-check-api
-```
-
-**No responses from AI?**
-- Add OpenAI API key to .env file
-- Restart Docker containers
-
----
-
-*Built for hackathon - optimized for demo purposes*
