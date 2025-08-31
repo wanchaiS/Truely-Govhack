@@ -98,14 +98,40 @@ class FactCheckDatabase:
         """Get statistics about the collection"""
         try:
             count = self.collection.count()
+            
+            # Get detailed document info if we have data
+            documents_info = []
+            if count > 0:
+                # Get all documents to analyze metadata
+                all_data = self.collection.get()
+                
+                # Group by source file
+                files_info = {}
+                for i, metadata in enumerate(all_data['metadatas']):
+                    source_file = metadata.get('source_file', 'unknown')
+                    if source_file not in files_info:
+                        files_info[source_file] = {
+                            'source_file': source_file,
+                            'file_type': metadata.get('file_type', 'unknown'),
+                            'chunk_count': 0,
+                            'processed_at': metadata.get('processed_at', 'unknown'),
+                            'total_chunks': metadata.get('total_chunks', 0)
+                        }
+                    files_info[source_file]['chunk_count'] += 1
+                
+                documents_info = list(files_info.values())
+            
             return {
                 "total_chunks": count,
+                "total_documents": len(documents_info),
                 "collection_name": self.collection.name,
-                "db_path": self.db_path
+                "db_path": self.db_path,
+                "documents": documents_info,
+                "has_data": count > 0
             }
         except Exception as e:
             print(f"ERROR: Error getting stats: {e}")
-            return {"total_chunks": 0, "collection_name": "unknown", "db_path": self.db_path}
+            return {"total_chunks": 0, "total_documents": 0, "collection_name": "unknown", "db_path": self.db_path, "documents": [], "has_data": False}
     
     def delete_document_by_filename(self, filename: str) -> int:
         """

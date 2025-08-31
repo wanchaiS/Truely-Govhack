@@ -158,7 +158,7 @@ async function fetchFactCheckAnalysis(content) {
   try {
     console.log('Making API call to backend');
 
-    const response = await fetch('http://localhost:8877/fact-check', {
+    const response = await fetch('http://localhost/api/fact-check', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -119,6 +119,12 @@
         
         <div id="message"></div>
         
+        <!-- Database Statistics Section -->
+        <div class="database-stats" style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h2 style="margin-top: 0;">Vectorized Documents Database</h2>
+            <div id="databaseStats">Loading database statistics...</div>
+        </div>
+
         <div class="file-list">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2>Files in System</h2>
@@ -157,6 +163,73 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function loadDatabaseStats() {
+            fetch(`${API_BASE_URL}/stats`)
+                .then(response => response.json())
+                .then(data => {
+                    const statsDiv = document.getElementById('databaseStats');
+                    if (data.status === 'success' && data.stats) {
+                        const stats = data.stats;
+                        let html = `
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: white; padding: 15px; border-radius: 6px; text-align: center;">
+                                    <h3 style="margin: 0; color: #0ea5e9;">${stats.total_chunks}</h3>
+                                    <p style="margin: 5px 0 0 0; color: #666;">Vector Chunks</p>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; text-align: center;">
+                                    <h3 style="margin: 0; color: #059669;">${stats.total_documents}</h3>
+                                    <p style="margin: 5px 0 0 0; color: #666;">Documents Processed</p>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; text-align: center;">
+                                    <h3 style="margin: 0; color: ${stats.has_data ? '#059669' : '#dc2626'};">${stats.has_data ? '✓ Ready' : '✗ Empty'}</h3>
+                                    <p style="margin: 5px 0 0 0; color: #666;">Database Status</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        if (stats.documents && stats.documents.length > 0) {
+                            html += `
+                                <div style="margin-top: 20px;">
+                                    <h4 style="margin-bottom: 10px;">Vectorized Documents:</h4>
+                                    <div style="background: white; border-radius: 6px; overflow: hidden;">
+                                        <table style="width: 100%; margin: 0;">
+                                            <thead>
+                                                <tr style="background: #f1f5f9;">
+                                                    <th style="padding: 10px;">Document</th>
+                                                    <th style="padding: 10px;">Type</th>
+                                                    <th style="padding: 10px;">Chunks</th>
+                                                    <th style="padding: 10px;">Processed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${stats.documents.map(doc => `
+                                                    <tr>
+                                                        <td style="padding: 10px;">${doc.source_file}</td>
+                                                        <td style="padding: 10px;">${doc.file_type}</td>
+                                                        <td style="padding: 10px;">${doc.chunk_count}</td>
+                                                        <td style="padding: 10px; font-size: 12px; color: #666;">${new Date(doc.processed_at).toLocaleDateString()}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html += `<p style="color: #666; font-style: italic;">No documents have been vectorized yet. Upload documents above to get started.</p>`;
+                        }
+                        
+                        statsDiv.innerHTML = html;
+                    } else {
+                        statsDiv.innerHTML = '<p style="color: #dc2626;">Error loading database statistics</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading database stats:', error);
+                    document.getElementById('databaseStats').innerHTML = '<p style="color: #dc2626;">Error loading database statistics</p>';
+                });
         }
 
         function loadFiles() {
@@ -202,6 +275,7 @@
                 if (data.status === 'success') {
                     showMessage(`File deleted: ${data.filename}`);
                     loadFiles();
+                    loadDatabaseStats(); // Refresh database stats
                 } else {
                     showMessage(data.error || 'Delete failed', true);
                 }
@@ -277,6 +351,7 @@
                     uploadBtn.disabled = true;
                     
                     loadFiles();
+                    loadDatabaseStats(); // Refresh database stats
                 } else if (data.status === 'partial_success') {
                     showMessage(`File uploaded but processing failed: ${data.message}`, true);
                     loadFiles();
@@ -311,6 +386,7 @@
                 if (data.status === 'success') {
                     showMessage('Database cleared successfully');
                     loadFiles(); // Refresh the file list
+                    loadDatabaseStats(); // Refresh database stats
                 } else {
                     showMessage(data.error || 'Clear failed', true);
                 }
@@ -328,8 +404,9 @@
         // Add event listener for clear database button
         document.getElementById('clearDbBtn').addEventListener('click', clearDatabase);
 
-        // Load files on page load
+        // Load files and database stats on page load
         loadFiles();
+        loadDatabaseStats();
     </script>
 </body>
 </html>
