@@ -4,7 +4,7 @@ Flask API server for fact-checking database
 Provides endpoints for browser extension integration
 """
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
 import logging
@@ -119,7 +119,7 @@ def generate_document_url(source_file: str, source_url: str = None) -> str:
     # Return the source URL directly from database metadata
     return source_url or ""
 
-@app.route('/health', methods=['GET'])
+@app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     # Check if LLM service is available with backend API key
@@ -141,7 +141,7 @@ def health_check():
         "llm_service_available": llm_available
     })
 
-@app.route('/stats', methods=['GET'])
+@app.route('/api/stats', methods=['GET'])
 def get_stats():
     """Get database statistics"""
     if not db:
@@ -158,7 +158,7 @@ def get_stats():
         logger.error(f"Error getting stats: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/fact-check', methods=['POST'])
+@app.route('/api/fact-check', methods=['POST'])
 def fact_check():
     """
     Fact-check endpoint for browser extension
@@ -259,7 +259,7 @@ def fact_check():
         logger.error(f"Error in fact-check endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/query', methods=['POST'])
+@app.route('/api/query', methods=['POST'])
 def general_query():
     """
     General query endpoint (for Ask feature)
@@ -328,7 +328,7 @@ def general_query():
         logger.error(f"Error in general query endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/files', methods=['GET'])
+@app.route('/api/files', methods=['GET'])
 def list_files():
     """List all files in the documents directory with processing status"""
     if not db:
@@ -358,7 +358,7 @@ def list_files():
         logger.error(f"Error listing files: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/upload', methods=['POST'])
+@app.route('/api/upload', methods=['POST'])
 def upload_file():
     """Upload a file to the documents directory"""
     if not db:
@@ -445,7 +445,7 @@ def upload_file():
 
 # process-file endpoint removed - processing now happens automatically during upload
 
-@app.route('/files/<filename>', methods=['DELETE'])
+@app.route('/api/files/<filename>', methods=['DELETE'])
 def delete_file(filename):
     """Delete a file from both the filesystem and vector database"""
     if not db:
@@ -479,7 +479,7 @@ def delete_file(filename):
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/clear-database', methods=['POST'])
+@app.route('/api/clear-database', methods=['POST'])
 def clear_database():
     """Clear all documents from the database"""
     try:
@@ -511,7 +511,7 @@ def internal_error(error):
 
 def main():
     """Run the Flask development server"""
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8877))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     
     logger.info(f"Starting fact-checking API server on port {port}")
