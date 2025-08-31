@@ -72,39 +72,6 @@ Visit: http://localhost/manage
 **3.4 Test the Chrome extension:**
 Select any text on a webpage - you should see the "Fact Check" button appear!
 
-## Pre-loaded Demo Data
-
-The system comes with 4 processed Australian tax documents:
-- **Capital Gain Tax** (117 chunks) - Information about capital gains tax obligations
-- **Income Declaration** (153 chunks) - What income must be declared to ATO
-- **Personal Deductions** (185 chunks) - Allowable personal tax deductions
-- **Immigration Programs** (191 chunks) - Australian immigration and visa information
-
-**Total: 646 vector chunks ready for instant fact-checking!**
-
-Try fact-checking statements like:
-- "Capital gains are not taxable in Australia"
-- "Rental income doesn't need to be declared"
-- "Work-related expenses are tax deductible"
-
-## How to Use
-
-### Upload Documents to Knowledge Base
-1. Open your browser and go to: **http://localhost/manage**
-2. Use the **Document Management** page to:
-   - Upload new documents (PDF, DOCX, TXT, CSV)
-   - View existing documents
-   - Delete unwanted files
-   - Monitor database statistics
-
-### Using the Chrome Extension
-1. **Select text** on any webpage
-2. **Click "Fact Check"** button that appears
-3. **See results** in the popup with:
-   - Verification status (SUPPORTED/CONTRADICTED/INSUFFICIENT/MIXED)
-   - Source references from your knowledge base
-   - AI-powered analysis
-
 ## How It Works
 
 **System Architecture:**
@@ -116,32 +83,3 @@ Try fact-checking statements like:
 **Data Flow:**
 1. Upload documents through web interface → Text extraction → Vector embeddings → Database storage
 2. Select text on webpage → Extension queries database → AI analyzes context → Results displayed
-
-## 🏆 Judge Evaluation Summary
-
-This system demonstrates:
-
-### ✅ **Technical Excellence**
-- Advanced RAG (Retrieval-Augmented Generation) implementation
-- Real-time vector similarity search with ChromaDB
-- Seamless OpenAI GPT integration for intelligent analysis
-- Robust Chrome extension with CORS-compliant architecture
-
-### ✅ **User Experience** 
-- **Instant deployment**: Working demo in 60 seconds
-- **Intuitive interface**: Select text → Click → Get results
-- **Professional UI**: Clean, responsive management interface
-- **Real-time feedback**: Classifications with source references
-
-### ✅ **Production Ready**
-- **Docker containerization** with nginx proxy
-- **Pre-loaded database** with 646 processed document chunks
-- **Comprehensive error handling** and graceful fallbacks
-- **Secure configuration** with environment variable management
-
-### ✅ **Hackathon Impact**
-- **Solves real problems**: Combat misinformation with AI-powered fact-checking
-- **Immediate value**: Works out-of-the-box with Australian tax documents
-- **Scalable solution**: Easy to add new document types and domains
-- **Innovation**: Combines browser extension + RAG + vector search seamlessly
-
