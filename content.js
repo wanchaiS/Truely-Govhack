@@ -33,7 +33,7 @@ function createAnalysisBox() {
   analysisBox.id = 'ai-analysis-box';
   analysisBox.innerHTML = `
     <div class="analysis-header">
-      <span class="analysis-title">Truely Analysis</span>
+      <span class="analysis-title">Truely Chat</span>
       <div class="analysis-mode-indicator"></div>
       <button class="analysis-close">&times;</button>
     </div>
@@ -132,23 +132,141 @@ function convertMarkdownLinks(content) {
   return content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="source-link">$1</a>');
 }
 
-// Show analysis result (replaces previous result)
-function showAnalysisResult(content, sourcesData = null) {
+// Parse analysis content into structured data
+function parseAnalysisContent(queryText, analysis) {
+  const data = {
+    query: queryText,
+    classification: 'UNKNOWN',
+    reasoning: '',
+    icon: '❓',
+    colorClass: 'unknown'
+  };
+
+  if (analysis && analysis.classification) {
+    data.classification = analysis.classification;
+    data.reasoning = analysis.reasoning || analysis.analysis || '';
+    
+    // Set icon and color based on classification
+    switch (analysis.classification) {
+      case 'SUPPORTED':
+      case 'VERIFIED':
+        data.icon = '✓';
+        data.colorClass = 'verified';
+        break;
+      case 'CONTRADICTED':
+        data.icon = '✗';
+        data.colorClass = 'contradicted';
+        break;
+      case 'MIXED':
+        data.icon = '⚠';
+        data.colorClass = 'mixed';
+        break;
+      case 'INSUFFICIENT':
+        data.icon = '❓';
+        data.colorClass = 'insufficient';
+        break;
+      default:
+        data.icon = '❓';
+        data.colorClass = 'unknown';
+    }
+  }
+
+  return data;
+}
+
+// Create compact, structured HTML for analysis
+function createCompactAnalysisHTML(structuredData, sourcesData, isLoading = false) {
+  const { query, classification, reasoning, icon, colorClass } = structuredData;
+  
+  // Handle loading state
+  if (isLoading) {
+    return `
+      <div class="analysis-result loading">
+        <div class="query-section">
+          <div class="analyzing-text">
+            <span>Analyzing</span>
+            <div class="loading-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Truncate long queries for compact display
+  const truncatedQuery = query.length > 60 ? query.substring(0, 60) + '...' : query;
+  
+  let html = `
+    <div class="analysis-result compact">
+      <div class="query-section">
+        <span class="query-label">Fact-checking:</span>
+        <span class="query-text" title="${query}">${truncatedQuery}</span>
+      </div>
+      
+      <div class="result-section">
+        <div class="result-badge ${colorClass}">
+          <span class="result-icon">${icon}</span>
+          <span class="result-text">${classification}</span>
+        </div>
+      </div>
+      
+      <div class="reasoning-section">
+        <div class="reasoning-content">${convertMarkdownLinks(reasoning.replace(/\n/g, '<br>'))}</div>
+      </div>
+  `;
+  
+  // Add sources section if available
+  if (sourcesData && sourcesData.length > 0) {
+    html += `
+      <div class="sources-section compact">
+        <span class="sources-label">Sources:</span>
+        <span class="sources-links">`;
+    
+    const sourceLinks = sourcesData.slice(0, 3).map(source => {
+      const displayName = source.name.length > 25 ? source.name.substring(0, 25) + '...' : source.name;
+      if (source.url) {
+        return `<a href="${source.url}" target="_blank" rel="noopener" class="source-link compact" title="${source.name}">${displayName}</a>`;
+      } else {
+        return `<span class="source-name" title="${source.name}">${displayName}</span>`;
+      }
+    });
+    
+    html += sourceLinks.join(', ');
+    if (sourcesData.length > 3) {
+      html += ` <span class="more-sources">+${sourcesData.length - 3} more</span>`;
+    }
+    html += `</span></div>`;
+  }
+  
+  html += `    </div>`;
+  
+  return html;
+}
+
+// Show analysis result with structured, compact layout
+function showAnalysisResult(content, sourcesData = null, analysis = null, isLoading = false) {
   const analysisBox = createAnalysisBox();
   const contentContainer = analysisBox.querySelector('.analysis-content');
   
-  // Format content with proper structure and sources
-  const htmlContent = formatAnalysisContent(content, sourcesData);
+  // Handle loading state
+  if (isLoading) {
+    const loadingData = { query: content, classification: '', reasoning: '', icon: '', colorClass: '' };
+    const htmlContent = createCompactAnalysisHTML(loadingData, null, true);
+    contentContainer.innerHTML = htmlContent;
+    return;
+  }
   
-  // Clear previous result and show new one
-  contentContainer.innerHTML = `
-    <div class="analysis-result">
-      <div class="result-content">
-        <span class="mode-icon">VERIFIED</span>
-        ${htmlContent}
-      </div>
-    </div>
-  `;
+  // Parse the structured analysis data
+  const structuredData = parseAnalysisContent(content, analysis);
+  
+  // Create compact, structured HTML
+  const htmlContent = createCompactAnalysisHTML(structuredData, sourcesData);
+  
+  // Clear previous result and show new structured layout
+  contentContainer.innerHTML = htmlContent;
 }
 
 
@@ -175,33 +293,13 @@ async function fetchFactCheckAnalysis(content) {
 
     const data = await response.json();
     
-    // Format the response for display
-    let formattedContent = `Fact-checking: "${content}"\n\n`;
-    
-    if (data.fact_check) {
-      const fc = data.fact_check;
-      
-      // Get classification icon
-      let classificationIcon = 'WARNING';
-      if (fc.classification === 'SUPPORTED') classificationIcon = 'SUPPORTED';
-      else if (fc.classification === 'CONTRADICTED') classificationIcon = 'CONTRADICTED';
-      else if (fc.classification === 'INSUFFICIENT') classificationIcon = 'INSUFFICIENT';
-      else if (fc.classification === 'MIXED') classificationIcon = 'MIXED';
-      
-      formattedContent += `${classificationIcon} ${fc.classification}\n\n`;
-      
-      if (fc.reasoning) {
-        formattedContent += `${fc.reasoning}`;
-      }
-    } else {
-      // Fallback if no fact-check response
-      formattedContent += `Analysis completed\n\n`;
-      if (data.context && data.context.length > 0) {
-        formattedContent += `Found ${data.context.length} relevant document(s). Review the context and cross-reference with authoritative sources.`;
-      } else {
-        formattedContent += `No relevant context found. Verify claims with authoritative sources and fact-checking websites.`;
-      }
-    }
+    // Return structured data for compact display
+    return {
+      content: content, // Original query text
+      data: data,
+      analysis: data.fact_check || null,
+      status: 'success'
+    };
 
     return {
       content: formattedContent,
@@ -213,9 +311,11 @@ async function fetchFactCheckAnalysis(content) {
     
     // Fallback to basic analysis if API fails
     return {
-      content: `Fact-checking: "${content}"\n\nConnection failed\n\nUnable to connect to the fact-checking service. Please ensure the backend is running and try again.`,
+      content: content,
       data: null,
-      status: 'error'
+      analysis: null,
+      status: 'error',
+      error: 'Connection failed. Unable to connect to the fact-checking service.'
     };
   }
 }
@@ -226,8 +326,8 @@ async function showAnalysisResult_async(content) {
   const analysisBox = createAnalysisBox();
   positionAnalysisBox();
   
-  // Show loading message
-  showAnalysisResult('Analyzing...');
+  // Show loading message with animated dots
+  showAnalysisResult(content, null, null, true);
   
   // Show analysis box
   analysisBox.classList.add('visible');
@@ -244,7 +344,7 @@ async function showAnalysisResult_async(content) {
   const uniqueSources = analysis.data ? extractUniqueSources(analysis.data) : [];
   
   // Show analysis result with sources (replaces loading message)
-  showAnalysisResult(analysis.content, uniqueSources);
+  showAnalysisResult(analysis.content, uniqueSources, analysis.analysis, false);
 }
 
 // Hide analysis box
@@ -275,8 +375,7 @@ function createButtonContainer() {
   buttonContainer.id = 'action-buttons';
   buttonContainer.innerHTML = `
     <button class="action-btn factcheck-btn" title="Fact-check this content">
-      <span class="btn-icon">CHECK</span>
-      <span class="btn-text">Fact Check</span>
+      <span class="btn-text">Check with Truely</span>
     </button>
   `;
   
