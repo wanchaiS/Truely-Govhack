@@ -35,11 +35,11 @@ class FactCheckDatabase:
                 }
             )
             
-            print(f"✅ Database initialized successfully at: {self.db_path}")
-            print(f"📚 Collection 'fact_check_documents' ready")
+            print(f"Database initialized successfully at: {self.db_path}")
+            print(f"Collection 'fact_check_documents' ready")
             
         except Exception as e:
-            print(f"❌ Error initializing database: {e}")
+            print(f"ERROR: Error initializing database: {e}")
             raise
     
     def add_document_chunks(self, chunks: List[str], metadatas: List[Dict], ids: List[str], embeddings: List[List[float]] = None):
@@ -66,10 +66,10 @@ class FactCheckDatabase:
                     metadatas=metadatas,
                     ids=ids
                 )
-            print(f"✅ Added {len(chunks)} document chunks to database")
+            print(f"Added {len(chunks)} document chunks to database")
             
         except Exception as e:
-            print(f"❌ Error adding documents: {e}")
+            print(f"ERROR: Error adding documents: {e}")
             raise
     
     def query_similar_with_embeddings(self, query_embeddings: List[float], n_results: int = 5) -> Dict:
@@ -91,7 +91,7 @@ class FactCheckDatabase:
             return results
             
         except Exception as e:
-            print(f"❌ Error querying database: {e}")
+            print(f"ERROR: Error querying database: {e}")
             return {"documents": [[]], "metadatas": [[]], "distances": [[]]}
     
     def get_collection_stats(self) -> Dict:
@@ -104,7 +104,7 @@ class FactCheckDatabase:
                 "db_path": self.db_path
             }
         except Exception as e:
-            print(f"❌ Error getting stats: {e}")
+            print(f"ERROR: Error getting stats: {e}")
             return {"total_chunks": 0, "collection_name": "unknown", "db_path": self.db_path}
     
     def delete_document_by_filename(self, filename: str) -> int:
@@ -124,11 +124,11 @@ class FactCheckDatabase:
             )
             
             # ChromaDB delete returns None, so we need to check differently
-            print(f"✅ Deleted all chunks for file: {filename}")
+            print(f"Deleted all chunks for file: {filename}")
             return 1  # Simplified return - indicates success
             
         except Exception as e:
-            print(f"❌ Error deleting document chunks for {filename}: {e}")
+            print(f"ERROR: Error deleting document chunks for {filename}: {e}")
             raise
     
     def clear_collection(self):
@@ -143,10 +143,10 @@ class FactCheckDatabase:
                     "cleared_at": datetime.now().isoformat()
                 }
             )
-            print("✅ Collection cleared successfully")
+            print("Collection cleared successfully")
             
         except Exception as e:
-            print(f"❌ Error clearing collection: {e}")
+            print(f"ERROR: Error clearing collection: {e}")
 
 
 def test_database():
@@ -178,8 +178,8 @@ def test_database():
     query = "How old is Earth?"
     results = db.query_similar(query, n_results=2)
     
-    print(f"\n🔍 Query: '{query}'")
-    print("📋 Results:")
+    print(f"\nQuery: '{query}'")
+    print("Results:")
     for i, doc in enumerate(results['documents'][0]):
         print(f"  {i+1}. {doc}")
         print(f"     Metadata: {results['metadatas'][0][i]}")
@@ -187,9 +187,9 @@ def test_database():
     
     # Show stats
     stats = db.get_collection_stats()
-    print(f"\n📊 Database Stats: {stats}")
+    print(f"\nDatabase Stats: {stats}")
     
-    print("\n✅ Database test completed successfully!")
+    print("\nDatabase test completed successfully!")
     return db
 
 

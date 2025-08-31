@@ -12,11 +12,11 @@ from pathlib import Path
 def check_python_version():
     """Check if Python version is compatible"""
     if sys.version_info < (3, 8):
-        print("❌ Python 3.8 or higher is required")
+        print("ERROR: Python 3.8 or higher is required")
         print(f"Current version: {sys.version}")
         return False
     else:
-        print(f"✅ Python version: {sys.version.split()[0]}")
+        print(f"Python version: {sys.version.split()[0]}")
         return True
 
 def create_virtual_environment():
@@ -24,22 +24,22 @@ def create_virtual_environment():
     venv_path = Path("venv")
     
     if venv_path.exists():
-        print("✅ Virtual environment already exists")
+        print("Virtual environment already exists")
         return True
     
     try:
-        print("🔨 Creating virtual environment...")
+        print("Creating virtual environment...")
         subprocess.run([sys.executable, "-m", "venv", "venv"], check=True)
-        print("✅ Virtual environment created successfully")
+        print("Virtual environment created successfully")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to create virtual environment: {e}")
+        print(f"ERROR: Failed to create virtual environment: {e}")
         return False
 
 def install_requirements():
     """Install required packages"""
     try:
-        print("📦 Installing requirements...")
+        print("Installing requirements...")
         
         # Determine pip path based on OS
         if os.name == 'nt':  # Windows
@@ -48,13 +48,13 @@ def install_requirements():
             pip_path = "venv/bin/pip"
         
         subprocess.run([pip_path, "install", "-r", "requirements.txt"], check=True)
-        print("✅ Requirements installed successfully")
+        print("Requirements installed successfully")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to install requirements: {e}")
+        print(f"ERROR: Failed to install requirements: {e}")
         return False
     except FileNotFoundError:
-        print("❌ Virtual environment not found. Please create it first.")
+        print("ERROR: Virtual environment not found. Please create it first.")
         return False
 
 def create_directories():
@@ -65,14 +65,14 @@ def create_directories():
         dir_path = Path(dir_name)
         if not dir_path.exists():
             dir_path.mkdir(parents=True, exist_ok=True)
-            print(f"✅ Created directory: {dir_name}")
+            print(f"Created directory: {dir_name}")
         else:
-            print(f"✅ Directory exists: {dir_name}")
+            print(f"Directory exists: {dir_name}")
 
 def test_installation():
     """Test if installation is working"""
     try:
-        print("🧪 Testing installation...")
+        print("Testing installation...")
         
         # Determine python path
         if os.name == 'nt':  # Windows
@@ -83,17 +83,17 @@ def test_installation():
         # Test database setup
         subprocess.run([python_path, "src/database.py"], 
                       check=True, cwd=".", capture_output=True)
-        print("✅ Database test passed")
+        print("Database test passed")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Installation test failed: {e}")
+        print(f"ERROR: Installation test failed: {e}")
         return False
 
 def show_usage_instructions():
     """Show usage instructions"""
     print("\n" + "="*60)
-    print("🎉 Setup completed successfully!")
+    print("Setup completed successfully!")
     print("="*60)
     
     if os.name == 'nt':  # Windows
@@ -103,7 +103,7 @@ def show_usage_instructions():
         activate_cmd = "source venv/bin/activate"
         python_cmd = "venv/bin/python"
     
-    print("\n📋 Next steps:")
+    print("\nNext steps:")
     print(f"1. Activate virtual environment: {activate_cmd}")
     print("2. Add your documents to the 'documents' folder")
     print("3. Process documents:")
@@ -111,12 +111,12 @@ def show_usage_instructions():
     print("4. Test the database:")
     print(f"   {python_cmd} src/database.py")
     
-    print("\n🔧 Available commands:")
+    print("\nAvailable commands:")
     print(f"• Process documents: {python_cmd} src/document_processor.py --input_dir <folder>")
     print(f"• Clear database: {python_cmd} src/document_processor.py --clear_db")
     print(f"• Test database: {python_cmd} src/database.py")
     
-    print("\n📁 Project structure:")
+    print("\nProject structure:")
     print("├── documents/     # Put your source documents here")
     print("├── data/          # ChromaDB data will be stored here")
     print("├── src/           # Source code")
@@ -125,7 +125,7 @@ def show_usage_instructions():
 
 def main():
     """Main setup function"""
-    print("🚀 Setting up Fact-Checking Database System")
+    print("Setting up Fact-Checking Database System")
     print("=" * 50)
     
     # Check Python version
@@ -145,7 +145,7 @@ def main():
     
     # Test installation
     if not test_installation():
-        print("⚠️ Installation test failed, but basic setup is complete")
+        print("WARNING: Installation test failed, but basic setup is complete")
     
     # Show usage instructions
     show_usage_instructions()
@@ -155,5 +155,5 @@ def main():
 if __name__ == "__main__":
     success = main()
     if not success:
-        print("\n❌ Setup failed. Please check the errors above.")
+        print("\nERROR: Setup failed. Please check the errors above.")
         sys.exit(1)

@@ -39,7 +39,7 @@ function createAnalysisBox() {
     </div>
     <div class="analysis-content">
       <div class="analysis-result">
-        <div class="result-content">👋 Select text or hover over links to get started!</div>
+        <div class="result-content">Select text or hover over links to get started!</div>
       </div>
     </div>
   `;
@@ -144,7 +144,7 @@ function showAnalysisResult(content, sourcesData = null) {
   contentContainer.innerHTML = `
     <div class="analysis-result">
       <div class="result-content">
-        <span class="mode-icon">✓</span>
+        <span class="mode-icon">VERIFIED</span>
         ${htmlContent}
       </div>
     </div>
@@ -177,17 +177,17 @@ async function fetchFactCheckAnalysis(content) {
     const data = await response.json();
     
     // Format the response for display
-    let formattedContent = `🔍 Fact-checking: "${content}"\n\n`;
+    let formattedContent = `Fact-checking: "${content}"\n\n`;
     
     if (data.fact_check) {
       const fc = data.fact_check;
       
       // Get classification icon
-      let classificationIcon = '⚠️';
-      if (fc.classification === 'SUPPORTED') classificationIcon = '✅';
-      else if (fc.classification === 'CONTRADICTED') classificationIcon = '❌';
-      else if (fc.classification === 'INSUFFICIENT') classificationIcon = '❓';
-      else if (fc.classification === 'MIXED') classificationIcon = '🔄';
+      let classificationIcon = 'WARNING';
+      if (fc.classification === 'SUPPORTED') classificationIcon = 'SUPPORTED';
+      else if (fc.classification === 'CONTRADICTED') classificationIcon = 'CONTRADICTED';
+      else if (fc.classification === 'INSUFFICIENT') classificationIcon = 'INSUFFICIENT';
+      else if (fc.classification === 'MIXED') classificationIcon = 'MIXED';
       
       formattedContent += `${classificationIcon} ${fc.classification}\n\n`;
       
@@ -215,7 +215,7 @@ async function fetchFactCheckAnalysis(content) {
     
     // Fallback to basic analysis if API fails
     return {
-      content: `🔍 Fact-checking: "${content}"\n\n⚠️ Connection failed\n\nUnable to connect to the fact-checking service. Please ensure the backend is running and try again.`,
+      content: `Fact-checking: "${content}"\n\nConnection failed\n\nUnable to connect to the fact-checking service. Please ensure the backend is running and try again.`,
       data: null,
       status: 'error'
     };
@@ -229,7 +229,7 @@ async function showAnalysisResult_async(content) {
   positionAnalysisBox();
   
   // Show loading message
-  showAnalysisResult('🤖 Analyzing...');
+  showAnalysisResult('Analyzing...');
   
   // Show analysis box
   analysisBox.classList.add('visible');
@@ -262,11 +262,12 @@ function clearAnalysisContent() {
     const contentContainer = analysisBox.querySelector('.analysis-content');
     contentContainer.innerHTML = `
       <div class="analysis-result">
-        <div class="result-content">👋 Select text or hover over links to get started!</div>
+        <div class="result-content">Select text or hover over links to get started!</div>
       </div>
     `;
   }
 }
+
 
 // Create button container with Fact Check button only
 function createButtonContainer() {
@@ -276,7 +277,7 @@ function createButtonContainer() {
   buttonContainer.id = 'action-buttons';
   buttonContainer.innerHTML = `
     <button class="action-btn factcheck-btn" title="Fact-check this content">
-      <span class="btn-icon">✓</span>
+      <span class="btn-icon">CHECK</span>
       <span class="btn-text">Fact Check</span>
     </button>
   `;
@@ -379,6 +380,15 @@ function init() {
         hideAnalysisBox();
         hideButtonContainer();
         currentSelectedText = null;
+      } else {
+        // Re-enable functionality - clear any disabled state
+        currentSelectedText = null;
+        // If there's currently selected text, handle it
+        const selectedText = getSelectedText();
+        if (selectedText && isValidSelection(selectedText)) {
+          currentSelectedText = selectedText;
+          showButtonContainer(null, true);
+        }
       }
     }
   });

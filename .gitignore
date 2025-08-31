@@ -11,6 +11,7 @@ backend/data/chroma_db/
 
 # Log files
 backend/logs/*.log
+backend/src/logs/*.log
 
 # OS files
 .DS_Store

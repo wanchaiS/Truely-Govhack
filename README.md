@@ -1,15 +1,15 @@
-# Truely - AI Fact-Checking System 🚀
+# Truely - AI Fact-Checking System
 
 An AI-powered fact-checking system with Chrome extension that analyzes text selections and provides contextual verification using a knowledge base of processed documents.
 
-## 🎯 What It Does
+## What It Does
 
 - **Chrome Extension**: Select any text on any webpage to get instant fact-checking
 - **Document Processing**: Upload and process documents (PDF, DOCX, TXT, CSV) into a searchable knowledge base
 - **AI Analysis**: Uses RAG (Retrieval-Augmented Generation) with OpenAI for intelligent fact verification
 - **Web Interface**: Easy document management through browser interface
 
-## 🚀 Quick Deploy (2 Minutes)
+## Quick Deploy (2 Minutes)
 
 ### Prerequisites
 - Docker installed on your machine
@@ -17,10 +17,11 @@ An AI-powered fact-checking system with Chrome extension that analyzes text sele
 
 ### Step 1: Deploy Backend
 ```bash
-git clone <this-repo>
+git clone https://github.com/wanchaiS/Truely-Govhack.git
 cd Truely/backend
 
 # Configure OpenAI API key (required)
+
 cp .env.example .env
 # Edit .env and add: OPENAI_API_KEY=your_key_here
 
@@ -39,7 +40,7 @@ docker compose up -d
 2. Check database stats: http://localhost:8877/stats
 3. Select text on any webpage - you should see fact-checking buttons appear
 
-## 📖 How to Use
+## How to Use
 
 ### Upload Documents to Knowledge Base
 1. Open your browser and go to: **http://localhost:8877**
@@ -57,7 +58,7 @@ docker compose up -d
    - Source references from your knowledge base
    - AI-powered analysis
 
-## 🏗️ How It Works
+## How It Works
 
 **System Architecture:**
 - **Chrome Extension** detects text selection and sends queries

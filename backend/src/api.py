@@ -44,9 +44,9 @@ logger = logging.getLogger(__name__)
 # Initialize database
 try:
     db = FactCheckDatabase()
-    logger.info("✅ Database initialized successfully")
+    logger.info("Database initialized successfully")
 except Exception as e:
-    logger.error(f"❌ Failed to initialize database: {e}")
+    logger.error(f"Failed to initialize database: {e}")
     db = None
 
 # Initialize document processor for query embeddings
@@ -54,12 +54,12 @@ try:
     api_key = os.getenv('OPENAI_API_KEY')
     if api_key:
         doc_processor = DocumentProcessor(api_key=api_key)
-        logger.info("✅ Document processor initialized for query embeddings")
+        logger.info("Document processor initialized for query embeddings")
     else:
         doc_processor = None
-        logger.warning("⚠️ OpenAI API key not found - query embeddings will not work")
+        logger.warning("WARNING: OpenAI API key not found - query embeddings will not work")
 except Exception as e:
-    logger.error(f"❌ Failed to initialize document processor: {e}")
+    logger.error(f"Failed to initialize document processor: {e}")
     doc_processor = None
 
 # LLM service will be initialized per-request when API key is provided
@@ -236,16 +236,16 @@ def fact_check():
                 if llm_result.status == "success":
                     api_response.fact_check = llm_result.fact_check
                     api_response.llm_response = llm_result
-                    logger.info("✅ LLM fact-check response generated")
+                    logger.info("LLM fact-check response generated")
                 else:
                     api_response.llm_response = llm_result
-                    logger.warning(f"⚠️ LLM generation failed: {llm_result.error}")
+                    logger.warning(f"WARNING: LLM generation failed: {llm_result.error}")
                     
             except ValueError as e:
-                logger.warning(f"⚠️ LLM service creation failed: {e}")
+                logger.warning(f"WARNING: LLM service creation failed: {e}")
                 api_response.message = "LLM service requires API key - add 'api_key' to request or set OPENAI_API_KEY environment variable"
             except Exception as e:
-                logger.error(f"❌ Unexpected LLM error: {e}")
+                logger.error(f"ERROR: Unexpected LLM error: {e}")
                 api_response.message = f"LLM service error: {str(e)}"
         
         elif not (client_api_key or os.getenv('OPENAI_API_KEY')):
@@ -488,7 +488,7 @@ def clear_database():
             
         # Clear the ChromaDB collection
         db.clear_collection()
-        logger.info("🗑️ Database cleared successfully")
+        logger.info("Database cleared successfully")
         
         return jsonify({
             "status": "success",
@@ -497,7 +497,7 @@ def clear_database():
         
     except Exception as e:
         error_msg = f"Failed to clear database: {str(e)}"
-        logger.error(f"❌ {error_msg}")
+        logger.error(f"ERROR: {error_msg}")
         return jsonify({"error": error_msg}), 500
 
 
@@ -514,12 +514,12 @@ def main():
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     
-    logger.info(f"🚀 Starting fact-checking API server on port {port}")
-    logger.info(f"🌐 Debug mode: {debug}")
+    logger.info(f"Starting fact-checking API server on port {port}")
+    logger.info(f"Debug mode: {debug}")
     
     if db:
         stats = db.get_collection_stats()
-        logger.info(f"📊 Database ready with {stats['total_chunks']} chunks")
+        logger.info(f"Database ready with {stats['total_chunks']} chunks")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
 

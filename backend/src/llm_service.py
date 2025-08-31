@@ -259,7 +259,7 @@ def test_llm_service():
         
         # Test connection
         connection_test = llm.test_connection()
-        print("🔗 Connection Test:", connection_test)
+        print("Connection Test:", connection_test)
         
         # Test fact-checking with sample data
         sample_query = "Is the Earth round?"
@@ -276,23 +276,23 @@ def test_llm_service():
             }
         ]
         
-        print(f"\n🧪 Testing fact-check for: '{sample_query}'")
+        print(f"\nTesting fact-check for: '{sample_query}'")
         result = llm.generate_fact_check_response(sample_query, sample_context)
         
         if result["status"] == "success":
-            print("✅ Fact-check response generated successfully")
-            print("\n📝 Response:")
+            print("Fact-check response generated successfully")
+            print("\nResponse:")
             print(result["response"])
-            print(f"\n📊 Token usage: {result['token_usage']}")
+            print(f"\nToken usage: {result['token_usage']}")
         else:
-            print("❌ Fact-check failed:")
+            print("ERROR: Fact-check failed:")
             print(result.get("error", "Unknown error"))
             if "fallback_response" in result:
-                print("\n🔄 Fallback response:")
+                print("\nFallback response:")
                 print(result["fallback_response"])
         
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"ERROR: Test failed: {e}")
 
 
 if __name__ == "__main__":

@@ -40,9 +40,9 @@ class DocumentProcessor:
         if not self.api_key:
             raise ValueError("OpenAI API key required. Provide api_key parameter or set OPENAI_API_KEY environment variable")
         
-        print(f"🤖 Using OpenAI embedding model: {embedding_model}")
+        print(f"Using OpenAI embedding model: {embedding_model}")
         self.client = OpenAI(api_key=self.api_key)
-        print("✅ OpenAI client initialized successfully")
+        print("OpenAI client initialized successfully")
         
         # Supported file extensions
         self.supported_formats = {'.txt', '.pdf', '.docx', '.csv'}
@@ -70,11 +70,11 @@ class DocumentProcessor:
             elif extension == '.csv':
                 return self._extract_from_csv(file_path)
             else:
-                print(f"⚠️ Unsupported file format: {extension}")
+                print(f"WARNING: Unsupported file format: {extension}")
                 return ""
                 
         except Exception as e:
-            print(f"❌ Error processing {file_path}: {e}")
+            print(f"ERROR: Error processing {file_path}: {e}")
             return ""
     
     def _extract_from_txt(self, file_path: Path) -> str:
@@ -194,11 +194,11 @@ class DocumentProcessor:
                 batch_embeddings = [data.embedding for data in response.data]
                 embeddings.extend(batch_embeddings)
             
-            print(f"✅ Generated {len(embeddings)} embeddings")
+            print(f"Generated {len(embeddings)} embeddings")
             return embeddings
             
         except Exception as e:
-            print(f"❌ Error generating embeddings: {e}")
+            print(f"ERROR: Error generating embeddings: {e}")
             raise
     
     def process_document(self, file_path: str, source_url: str = "") -> Tuple[List[str], List[Dict], List[str]]:
@@ -213,12 +213,12 @@ class DocumentProcessor:
             Tuple of (chunks, metadata_list, ids)
         """
         file_path = Path(file_path)
-        print(f"📄 Processing: {file_path.name}")
+        print(f"Processing: {file_path.name}")
         
         # Extract text
         raw_text = self.extract_text_from_file(file_path)
         if not raw_text:
-            print(f"⚠️ No text extracted from {file_path.name}")
+            print(f"WARNING: No text extracted from {file_path.name}")
             return [], [], []
         
         # Clean text
@@ -226,7 +226,7 @@ class DocumentProcessor:
         
         # Create chunks
         chunks = self.chunk_text(clean_text)
-        print(f"  📝 Created {len(chunks)} chunks")
+        print(f"  Created {len(chunks)} chunks")
         
         # Generate metadata for each chunk
         file_hash = hashlib.md5(str(file_path).encode()).hexdigest()[:8]
@@ -266,7 +266,7 @@ class DocumentProcessor:
         input_dir = Path(input_dir)
         
         if not input_dir.exists():
-            print(f"❌ Directory not found: {input_dir}")
+            print(f"ERROR: Directory not found: {input_dir}")
             return {"error": "Directory not found"}
         
         # Find all supported files
@@ -275,11 +275,11 @@ class DocumentProcessor:
             files_to_process.extend(input_dir.glob(f"*{ext}"))
         
         if not files_to_process:
-            print(f"⚠️ No supported files found in {input_dir}")
+            print(f"WARNING: No supported files found in {input_dir}")
             print(f"Supported formats: {', '.join(self.supported_formats)}")
             return {"error": "No supported files found"}
         
-        print(f"🔍 Found {len(files_to_process)} files to process")
+        print(f"Found {len(files_to_process)} files to process")
         
         # Process statistics
         stats = {
@@ -309,19 +309,19 @@ class DocumentProcessor:
                     stats["failed_files"].append(str(file_path))
                     
             except Exception as e:
-                print(f"❌ Failed to process {file_path}: {e}")
+                print(f"ERROR: Failed to process {file_path}: {e}")
                 stats["failed_files"].append(str(file_path))
         
         end_time = datetime.now()
         stats["processing_time"] = str(end_time - start_time)
         
-        print(f"\n✅ Processing completed!")
-        print(f"📊 Processed {stats['processed_files']}/{stats['total_files']} files")
-        print(f"📝 Created {stats['total_chunks']} total chunks")
+        print(f"\nProcessing completed!")
+        print(f"Processed {stats['processed_files']}/{stats['total_files']} files")
+        print(f"Created {stats['total_chunks']} total chunks")
         print(f"⏱️ Processing time: {stats['processing_time']}")
         
         if stats["failed_files"]:
-            print(f"⚠️ Failed files: {len(stats['failed_files'])}")
+            print(f"WARNING: Failed files: {len(stats['failed_files'])}")
             for failed_file in stats["failed_files"]:
                 print(f"   - {failed_file}")
         
@@ -344,16 +344,16 @@ def main():
     
     args = parser.parse_args()
     
-    print("🚀 Starting document processing pipeline...")
-    print(f"📂 Input directory: {args.input_dir}")
-    print(f"💾 Database path: {args.db_path}")
+    print("Starting document processing pipeline...")
+    print(f"Input directory: {args.input_dir}")
+    print(f"Database path: {args.db_path}")
     print(f"🤖 Embedding model: {args.embedding_model}")
     
     # Initialize database
     db = FactCheckDatabase(args.db_path)
     
     if args.clear_db:
-        print("🗑️ Clearing existing database...")
+        print("Clearing existing database...")
         db.clear_collection()
     
     # Initialize processor
@@ -364,9 +364,9 @@ def main():
     
     # Show final database stats
     db_stats = db.get_collection_stats()
-    print(f"\n📊 Final database stats: {db_stats}")
+    print(f"\nFinal database stats: {db_stats}")
     
-    print("\n🎉 Document processing pipeline completed!")
+    print("\nDocument processing pipeline completed!")
 
 
 if __name__ == "__main__":
