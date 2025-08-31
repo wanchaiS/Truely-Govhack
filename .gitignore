@@ -7,7 +7,6 @@ backend/src/__pycache__/
 backend/.env
 
 # Database files
-backend/data/chroma_db/
 
 # Log files
 backend/logs/*.log
